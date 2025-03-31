@@ -57,7 +57,7 @@
 Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/PowerToys) that allows you to quickly check weather conditions directly from your PowerToys Run interface. Simply type `weather` followed by a location to get real-time weather information, or set up favorite locations for instant access.
 
 <div align="center">
-  <img src="Assets/instruction.png" alt="PowerToys" width="650">
+  <img src="Assets/instruction.png" alt="PowerToys" width="850">
 </div>
 
 ## ⚡ Easy Install
