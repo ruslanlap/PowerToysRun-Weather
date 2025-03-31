@@ -129,7 +129,13 @@ jobs:
       - name: Create ZIP archive
         run: |
           $artifactDir = "artifacts/Weather-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}"
-          $zipFile = "Weather-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip"
+          
+          # Create the zip files with names that match the README.md download links
+          if ("${{ matrix.platform }}" -eq "x64") {
+            $zipFile = "Weather-x64.zip"
+          } else {
+            $zipFile = "Weather-ARM64.zip"
+          }
           
           # Create the zip file
           Compress-Archive -Path "$artifactDir/Weather" -DestinationPath "artifacts/$zipFile"
@@ -223,7 +229,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            artifacts/build-artifacts-x64/Weather-v${{ steps.get_version.outputs.VERSION }}-x64.zip
-            artifacts/build-artifacts-arm64/Weather-v${{ steps.get_version.outputs.VERSION }}-arm64.zip
+            artifacts/Weather-x64.zip
+            artifacts/Weather-ARM64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
