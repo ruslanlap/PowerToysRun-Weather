@@ -159,7 +159,26 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          path: downloaded-artifacts
+      
+      # Debug step to see what files are available
+      - name: List downloaded artifacts
+        run: |
+          echo "Listing downloaded artifacts directory:"
+          ls -la downloaded-artifacts
+          echo "Listing x64 artifacts:"
+          ls -la downloaded-artifacts/build-artifacts-x64 || echo "No x64 artifacts found"
+          echo "Listing ARM64 artifacts:"
+          ls -la downloaded-artifacts/build-artifacts-arm64 || echo "No ARM64 artifacts found"
+      
+      # Copy artifacts to the expected location with the correct names
+      - name: Prepare artifacts for release
+        run: |
+          mkdir -p release-artifacts
+          cp downloaded-artifacts/build-artifacts-x64/*.zip release-artifacts/Weather-x64.zip || echo "Failed to copy x64 artifact"
+          cp downloaded-artifacts/build-artifacts-arm64/*.zip release-artifacts/Weather-ARM64.zip || echo "Failed to copy ARM64 artifact"
+          echo "Listing release artifacts:"
+          ls -la release-artifacts
       
       - name: Get version from tag
         id: get_version
@@ -229,7 +248,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            artifacts/Weather-x64.zip
-            artifacts/Weather-ARM64.zip
+            release-artifacts/Weather-x64.zip
+            release-artifacts/Weather-ARM64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
