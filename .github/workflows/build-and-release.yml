@@ -165,7 +165,7 @@ jobs:
           cat > release_notes.md << 'EOL'
           # 🌦️ Weather Plugin v${{ steps.get_version.outputs.VERSION }}
           
-          ![Weather Plugin Logo](https://raw.githubusercontent.com/ruslanlap/CommunityPowerToysRunWEATHER/master/Assets/logo.png)
+          ![Weather Plugin Logo](https://raw.githubusercontent.com/ruslanlap/PowerToysRun-Weather/master/Assets/logo.png)
           
           ## ✨ What's New
           
@@ -206,7 +206,7 @@ jobs:
           
           ## 🐛 Found a bug?
           
-          If you encounter any issues or have suggestions for improvements, please [open an issue](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/issues).
+          If you encounter any issues or have suggestions for improvements, please [open an issue](https://github.com/ruslanlap/PowerToysRun-Weather/issues).
           
           Made with ❤️ by [ruslanlap](https://github.com/ruslanlap)
           EOL
