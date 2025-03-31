@@ -1,0 +1,40 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35027.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Community.PowerToys.Run.Plugin.Weather", "Community.PowerToys.Run.Plugin.Weather\Community.PowerToys.Run.Plugin.Weather.csproj", "{67847EFA-78F6-4EB3-985F-43A22E306CDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Community.PowerToys.Run.Plugin.Weather.UnitTests", "Community.PowerToys.Run.Plugin.Weather.UnitTests\Community.PowerToys.Run.Plugin.Weather.UnitTests.csproj", "{D5C3384C-1517-4186-B773-E426083E7212}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67847EFA-78F6-4EB3-985F-43A22E306CDE}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{67847EFA-78F6-4EB3-985F-43A22E306CDE}.Debug|ARM64.Build.0 = Debug|ARM64
+		{67847EFA-78F6-4EB3-985F-43A22E306CDE}.Debug|x64.ActiveCfg = Debug|x64
+		{67847EFA-78F6-4EB3-985F-43A22E306CDE}.Debug|x64.Build.0 = Debug|x64
+		{67847EFA-78F6-4EB3-985F-43A22E306CDE}.Release|ARM64.ActiveCfg = Release|ARM64
+		{67847EFA-78F6-4EB3-985F-43A22E306CDE}.Release|ARM64.Build.0 = Release|ARM64
+		{67847EFA-78F6-4EB3-985F-43A22E306CDE}.Release|x64.ActiveCfg = Release|x64
+		{67847EFA-78F6-4EB3-985F-43A22E306CDE}.Release|x64.Build.0 = Release|x64
+		{D5C3384C-1517-4186-B773-E426083E7212}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{D5C3384C-1517-4186-B773-E426083E7212}.Debug|ARM64.Build.0 = Debug|ARM64
+		{D5C3384C-1517-4186-B773-E426083E7212}.Debug|x64.ActiveCfg = Debug|x64
+		{D5C3384C-1517-4186-B773-E426083E7212}.Debug|x64.Build.0 = Debug|x64
+		{D5C3384C-1517-4186-B773-E426083E7212}.Release|ARM64.ActiveCfg = Release|ARM64
+		{D5C3384C-1517-4186-B773-E426083E7212}.Release|ARM64.Build.0 = Release|ARM64
+		{D5C3384C-1517-4186-B773-E426083E7212}.Release|x64.ActiveCfg = Release|x64
+		{D5C3384C-1517-4186-B773-E426083E7212}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BC60069A-56FF-4249-BFE2-29DE9165FF3F}
+	EndGlobalSection
+EndGlobal

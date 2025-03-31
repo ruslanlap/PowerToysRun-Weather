@@ -1,0 +1,14 @@
+{
+  "ID": "CA864C186BD14B47A41C18BD24F5F4FA",
+  "ActionKeyword": "weather",
+  "IsGlobal": false,
+  "Name": "Weather",
+  "Author": "ruslanlap",
+  "Version": "0.89.0",
+  "Language": "csharp",
+  "Website": "https://github.com/ruslanlap/Community.PowerToys.Run.Plugin.Weather",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.Weather.dll",
+  "IcoPathDark": "Images\\weather.dark.png",
+  "IcoPathLight": "Images\\weather.light.png",
+  "DynamicLoading": false
+}

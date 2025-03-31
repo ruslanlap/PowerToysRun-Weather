@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="plugin_name" xml:space="preserve">
+    <value>Weather</value>
+  </data>
+  <data name="plugin_description" xml:space="preserve">
+    <value>Check weather conditions and forecast</value>
+  </data>
+  <data name="plugin_current_weather" xml:space="preserve">
+    <value>Current weather in {0}</value>
+  </data>
+  <data name="plugin_weather_details" xml:space="preserve">
+    <value>Weather details for {0}</value>
+  </data>
+  <data name="plugin_feels_like" xml:space="preserve">
+    <value>Feels like</value>
+  </data>
+  <data name="plugin_humidity" xml:space="preserve">
+    <value>Humidity</value>
+  </data>
+  <data name="plugin_wind_speed" xml:space="preserve">
+    <value>Wind speed</value>
+  </data>
+  <data name="plugin_forecast" xml:space="preserve">
+    <value>Forecast</value>
+  </data>
+  <data name="plugin_search_failed" xml:space="preserve">
+    <value>Failed to get weather for {0}</value>
+  </data>
+  <data name="plugin_no_location" xml:space="preserve">
+    <value>No location specified. Showing weather for your current location.</value>
+  </data>
+  <data name="plugin_open_detailed" xml:space="preserve">
+    <value>Open detailed weather</value>
+  </data>
+  <data name="plugin_api_key_missing" xml:space="preserve">
+    <value>API key is not set</value>
+  </data>
+  <data name="plugin_api_key_instructions" xml:space="preserve">
+    <value>Please set your OpenWeatherMap API key in the settings</value>
+  </data>
+  <data name="plugin_error_occurred" xml:space="preserve">
+    <value>An error occurred</value>
+  </data>
+  <data name="plugin_try_different_location" xml:space="preserve">
+    <value>Try a different location or check your API key</value>
+  </data>
+  <data name="plugin_copy_to_clipboard" xml:space="preserve">
+    <value>Copy to clipboard (Ctrl+C)</value>
+  </data>
+  <data name="plugin_add_favorite" xml:space="preserve">
+    <value>Add to favorites</value>
+  </data>
+  <data name="plugin_remove_favorite" xml:space="preserve">
+    <value>Remove from favorites</value>
+  </data>
+  <data name="plugin_view_forecast" xml:space="preserve">
+    <value>View forecast</value>
+  </data>
+  <data name="plugin_open_settings" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
+  <!-- Опції для налаштування --> 
+  <data name="option_api_key" xml:space="preserve">
+    <value>OpenWeatherMap API Key</value>
+  </data>
+  <data name="option_api_key_desc" xml:space="preserve">
+    <value>Get your API key from https://openweathermap.org/api</value>
+  </data>
+  <data name="option_temperature_unit" xml:space="preserve">
+    <value>Temperature Unit</value>
+  </data>
+  <data name="option_celsius" xml:space="preserve">
+    <value>Celsius (°C)</value>
+  </data>
+  <data name="option_fahrenheit" xml:space="preserve">
+    <value>Fahrenheit (°F)</value>
+  </data>
+  <data name="option_default_location" xml:space="preserve">
+    <value>Default Location</value>
+  </data>
+  <data name="option_default_location_desc" xml:space="preserve">
+    <value>Location to use when no location is specified</value>
+  </data>
+</root>

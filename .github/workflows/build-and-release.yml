@@ -1,0 +1,229 @@
+name: Build and Release Weather Plugin
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+
+# Permissions for GITHUB_TOKEN (principle of least privilege)
+permissions:
+  contents: write  # Needed for creating releases
+  issues: read
+  pull-requests: read
+
+# Add restrictions for parallel runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform: [x64, arm64]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      
+      - name: Build
+        run: dotnet build Weather/Weather.sln -c Release -p:Platform="${{ matrix.platform }}"
+      
+      - name: Get version
+        id: get_version
+        shell: bash
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+            echo "IS_TAG=true" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=$(date +'%Y.%m.%d')-$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+            echo "IS_TAG=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Debug Output
+        run: |
+          Get-ChildItem -Path "Weather" -Recurse -Directory | Where-Object { $_.Name -eq "Release" } | ForEach-Object { Write-Host $_.FullName }
+        shell: pwsh
+      
+      - name: Create output directory
+        run: mkdir -p artifacts
+      
+      - name: Copy build output to artifacts directory
+        run: |
+          $artifactDir = "artifacts/Weather-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}"
+          
+          # Create the artifact directory
+          New-Item -ItemType Directory -Force -Path $artifactDir
+          
+          # Create Weather subfolder
+          New-Item -ItemType Directory -Force -Path "$artifactDir/Weather"
+          
+          # Define the direct path to the build output
+          $buildOutput = "Weather/Community.PowerToys.Run.Plugin.Weather/bin/${{ matrix.platform }}/Release"
+          
+          Write-Host "Using build output directory: $buildOutput"
+          
+          # Check if the directory exists
+          if (-not (Test-Path $buildOutput)) {
+            Write-Host "Build output directory not found at expected path. Searching for it..."
+            $buildOutput = Get-ChildItem -Path "Weather" -Recurse -Directory | 
+                           Where-Object { $_.Name -eq "Release" -and $_.FullName -like "*${{ matrix.platform }}*" } | 
+                           Select-Object -First 1 -ExpandProperty FullName
+            
+            if ($buildOutput) {
+              Write-Host "Found build output directory: $buildOutput"
+            } else {
+              Write-Error "Could not find any Release directory for platform ${{ matrix.platform }}"
+              exit 1
+            }
+          }
+          
+          # Check if build output exists before proceeding
+          if (-not (Test-Path $buildOutput)) {
+            Write-Error "Build output directory not found"
+            exit 1
+          }
+          
+          # Check for files directly in the build output directory
+          $files = Get-ChildItem -Path $buildOutput -File
+          if ($files.Count -gt 0) {
+            Write-Host "Found $($files.Count) files in build output directory. Copying directly..."
+            Copy-Item -Path "$buildOutput/*" -Destination "$artifactDir/Weather" -Recurse -Force
+            Write-Host "Files copied successfully"
+          } else {
+            # Look for a .NET runtime folder
+            $runtimeFolder = Get-ChildItem -Path $buildOutput -Directory | 
+                             Where-Object { $_.Name -like "net*-windows*" } | 
+                             Select-Object -First 1 -ExpandProperty FullName
+            
+            if ($runtimeFolder) {
+              Write-Host "Found runtime folder: $runtimeFolder"
+              Copy-Item -Path "$runtimeFolder/*" -Destination "$artifactDir/Weather" -Recurse -Force
+              Write-Host "Files copied successfully from runtime folder"
+            } else {
+              # If no runtime folder, check for any subdirectories
+              $subDirs = Get-ChildItem -Path $buildOutput -Directory
+              if ($subDirs.Count -gt 0) {
+                $firstSubDir = $subDirs[0].FullName
+                Write-Host "No runtime folder found, but found subdirectory: $firstSubDir"
+                Copy-Item -Path "$firstSubDir/*" -Destination "$artifactDir/Weather" -Recurse -Force
+                Write-Host "Files copied from first subdirectory"
+              } else {
+                Write-Error "No files or subdirectories found in build output directory"
+                exit 1
+              }
+            }
+          }
+        shell: pwsh
+      
+      - name: Create ZIP archive
+        run: |
+          $artifactDir = "artifacts/Weather-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}"
+          $zipFile = "Weather-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip"
+          
+          # Create the zip file
+          Compress-Archive -Path "$artifactDir/Weather" -DestinationPath "artifacts/$zipFile"
+        shell: pwsh
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.platform }}
+          path: artifacts/*.zip
+  
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Prepare Release Notes
+        id: release_notes
+        run: |
+          cat > release_notes.md << 'EOL'
+          # 🌦️ Weather Plugin v${{ steps.get_version.outputs.VERSION }}
+          
+          ![Weather Plugin Logo](https://raw.githubusercontent.com/ruslanlap/CommunityPowerToysRunWEATHER/master/Assets/logo.png)
+          
+          ## ✨ What's New
+          
+          This release brings you the power of real-time weather information directly to your PowerToys Run interface!
+          
+          ### 🚀 Highlights
+          
+          - 🌍 **Global Weather Coverage** - Check weather conditions for any city worldwide
+          - 🏠 **Default & Favorite Locations** - Quick access to your frequently checked places
+          - 🌡️ **Comprehensive Weather Data** - Temperature, feels like, humidity, wind speed & direction
+          - 🖼️ **Beautiful Weather Widget** - Elegant popup window with modern UI design
+          - 🕒 **Location Time Display** - See the current time at your selected location
+          - 🔄 **Smart Caching** - Optimized API usage with automatic refresh
+          - 🌓 **Theme Support** - Seamless integration with PowerToys light and dark themes
+          
+          ## 📥 Installation
+          
+          1. Download the ZIP file for your platform (x64 or ARM64)
+          2. Extract to `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins\`
+          3. Restart PowerToys
+          4. Start using with `Alt+Space` then type `weather`
+          5. You'll need to get a free API key from [OpenWeatherMap](https://openweathermap.org/api)
+          
+          ## 🔍 Quick Commands
+          
+          | Command | Description |
+          |---------|-------------|
+          | `weather` | Show weather for default/current location |
+          | `weather London` | Show weather for a specific city |
+          | `weather London, UK` | Show weather with country code |
+          
+          ## 🙏 Acknowledgements
+          
+          Special thanks to:
+          - [hlaueriksson](https://github.com/hlaueriksson) for contributions and inspiration
+          - [OpenWeatherMap](https://openweathermap.org/) for providing the weather API
+          - [Microsoft PowerToys](https://github.com/microsoft/PowerToys) team for the amazing launcher
+          
+          ## 🐛 Found a bug?
+          
+          If you encounter any issues or have suggestions for improvements, please [open an issue](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/issues).
+          
+          Made with ❤️ by [ruslanlap](https://github.com/ruslanlap)
+          EOL
+          
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Weather Plugin v${{ steps.get_version.outputs.VERSION }}
+          body: ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/build-artifacts-x64/Weather-v${{ steps.get_version.outputs.VERSION }}-x64.zip
+            artifacts/build-artifacts-arm64/Weather-v${{ steps.get_version.outputs.VERSION }}-arm64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
