@@ -15,7 +15,7 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   ![Maintenance](https://img.shields.io/maintenance/yes/2025)
   ![C#](https://img.shields.io/badge/C%23-.NET-512BD4)
-  ![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)
+  ![Version](https://img.shields.io/badge/version-1.0.1-brightgreen)
   ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
   [![GitHub stars](https://img.shields.io/github/stars/ruslanlap/PowerToysRun-Weather)](https://github.com/ruslanlap/PowerToysRun-Weather/stargazers)
   [![GitHub issues](https://img.shields.io/github/issues/ruslanlap/PowerToysRun-Weather)](https://github.com/ruslanlap/PowerToysRun-Weather/issues)
@@ -26,10 +26,10 @@
 </div>
 
 <div align="center">
-  <a href="https://github.com/ruslanlap/PowerToysRun-Weather/releases/download/v1.0.0/Weather-x64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-Weather/releases/download/v1.0.1/Weather-x64.zip">
     <img src="https://img.shields.io/badge/Download%20Latest%20Release-x64-blue?style=for-the-badge&logo=github" alt="Download Latest Release" />
   </a>
-  <a href="https://github.com/ruslanlap/PowerToysRun-Weather/releases/download/v1.0.0/Weather-ARM64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-Weather/releases/download/v1.0.1/Weather-ARM64.zip">
     <img src="https://img.shields.io/badge/Download%20Latest%20Release-ARM64-blue?style=for-the-badge&logo=github" alt="Download Latest Release" />
   </a>
 </div>
@@ -37,6 +37,7 @@
 ## 📋 Table of Contents
 
 - [📋 Overview](#-overview)
+- [🆕 What's New in v1.0.1](#-whats-new-in-v101)
 - [⚡ Easy Install](#-easy-install)
 - [✨ Features](#-features)
 - [🎬 Demo Gallery](#-demo-gallery)
@@ -60,10 +61,16 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
   <img src="Assets/instruction.png" alt="PowerToys" width="850">
 </div>
 
+## 🆕 What's New in v1.0.1
+
+- 😎 **Temperature Feeling Emojis** - Added intuitive emoji indicators that show how the temperature feels
+- 🔧 **Improved UI** - Enhanced weather display with visual temperature indicators
+- 🐛 **Bug Fixes** - Various improvements and optimizations
+
 ## ⚡ Easy Install
 
 <div align="">
-  <a href="https://github.com/ruslanlap/PowerToysRun-Weather/releases/download/v1.0.0/Weather-x64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-Weather/releases/download/v1.0.1/Weather-x64.zip">
     <img src="https://img.shields.io/badge/⬇️_DOWNLOAD-WEATHER_PLUGIN-blue?style=for-the-badge&logo=github" alt="Download Weather Plugin">
   </a>
   
@@ -83,6 +90,7 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
 - ⭐ **Favorite Locations** - Save multiple locations for easy checking
 - 🧠 **Smart Geolocation** - Automatically detect your current location
 - 🌡️ **Temperature Units** - Choose between Celsius and Fahrenheit
+- 😎 **Temperature Feeling Emojis** - Intuitive visual indicators for temperature ranges
 - 🔍 **Detailed Information** - View comprehensive weather data including:
   - Current temperature
   - "Feels like" temperature
