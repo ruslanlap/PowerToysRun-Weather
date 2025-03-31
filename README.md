@@ -17,19 +17,19 @@
   ![C#](https://img.shields.io/badge/C%23-.NET-512BD4)
   ![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)
   ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
-  [![GitHub stars](https://img.shields.io/github/stars/ruslanlap/CommunityPowerToysRunWEATHER)](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/stargazers)
-  [![GitHub issues](https://img.shields.io/github/issues/ruslanlap/CommunityPowerToysRunWEATHER)](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/issues)
-  [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ruslanlap/CommunityPowerToysRunWEATHER)](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/latest)
-  [![GitHub all releases](https://img.shields.io/github/downloads/ruslanlap/CommunityPowerToysRunWEATHER/total)](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases)
+  [![GitHub stars](https://img.shields.io/github/stars/ruslanlap/PowerToysRun-WeatherR)](https://github.com/ruslanlap/PowerToysRun-WeatherR/stargazers)
+  [![GitHub issues](https://img.shields.io/github/issues/ruslanlap/PowerToysRun-WeatherR)](https://github.com/ruslanlap/PowerToysRun-WeatherR/issues)
+  [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ruslanlap/PowerToysRun-WeatherR)](https://github.com/ruslanlap/PowerToysRun-WeatherR/releases/latest)
+  [![GitHub all releases](https://img.shields.io/github/downloads/ruslanlap/PowerToysRun-WeatherR/total)](https://github.com/ruslanlap/PowerToysRun-WeatherR/releases)
   ![Made with Love](https://img.shields.io/badge/Made%20with-❤️-red)
   ![Awesome](https://img.shields.io/badge/Awesome-Yes-orange)
 </div>
 
 <div align="center">
-  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v1.0.0/Weather-x64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-WeatherR/releases/download/v1.0.0/Weather-x64.zip">
     <img src="https://img.shields.io/badge/Download%20Latest%20Release-x64-blue?style=for-the-badge&logo=github" alt="Download Latest Release" />
   </a>
-  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v1.0.0/Weather-ARM64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-WeatherR/releases/download/v1.0.0/Weather-ARM64.zip">
     <img src="https://img.shields.io/badge/Download%20Latest%20Release-ARM64-blue?style=for-the-badge&logo=github" alt="Download Latest Release" />
   </a>
 </div>
@@ -63,7 +63,7 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
 ## ⚡ Easy Install
 
 <div align="">
-  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v1.0.0/Weather-x64.zip">
+  <a href="https://github.com/ruslanlap/PowerToysRun-WeatherR/releases/download/v1.0.0/Weather-x64.zip">
     <img src="https://img.shields.io/badge/⬇️_DOWNLOAD-WEATHER_PLUGIN-blue?style=for-the-badge&logo=github" alt="Download Weather Plugin">
   </a>
   
@@ -126,7 +126,7 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
 
 ### 📥 Installation Steps
 
-1. Download the latest release from the [Releases page](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/latest)
+1. Download the latest release from the [Releases page](https://github.com/ruslanlap/PowerToysRun-WeatherR/releases/latest)
 2. Extract the ZIP file to:
    ```
    %LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins\
@@ -136,7 +136,7 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
 5. Enter your OpenWeatherMap API key in the plugin settings
 
 <div align="center">
-  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/latest">
+  <a href="https://github.com/ruslanlap/PowerToysRun-WeatherR/releases/latest">
     <img src="https://img.shields.io/badge/⬇️_Download-Latest_Release-blue?style=for-the-badge&logo=github" alt="Download Latest Release">
   </a>
 </div>
@@ -180,7 +180,7 @@ All settings are stored securely in the PowerToys settings file.
 
 1. Clone the repository:
    ```
-   git clone https://github.com/ruslanlap/CommunityPowerToysRunWEATHER.git
+   git clone https://github.com/ruslanlap/PowerToysRun-WeatherR.git
    ```
 
 2. Open the solution in Visual Studio 2022 or later
