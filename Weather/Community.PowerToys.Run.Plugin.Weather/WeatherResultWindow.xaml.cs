@@ -12,7 +12,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
             InitializeComponent();
         }
 
-        public void SetWeatherData(string title, string details, string iconPath = null)
+        public void SetWeatherData(string title, string details, string iconPath = null, float feelsLikeCelsius = 0)
         {
             // Parse the details text
             string[] lines = details.Split('\n');
@@ -26,7 +26,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                 TemperatureTextBlock.Text = lines[1]; // Temperature
 
             if (lines.Length > 2)
-                FeelsLikeTextBlock.Text = lines[2]; // Feels like
+                FeelsLikeTextBlock.Text = $"{lines[2]} {GetFeelsLikeEmoji(feelsLikeCelsius)}"; // Feels like with emoji
 
             if (lines.Length > 3)
                 HumidityTextBlock.Text = lines[3]; // Humidity
@@ -47,13 +47,25 @@ namespace Community.PowerToys.Run.Plugin.Weather
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Error loading weather icon: {ex.Message}");
+                    WeatherIcon.Visibility = Visibility.Collapsed;
                 }
             }
             else
             {
-                // Use default icon or hide the image
                 WeatherIcon.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private string GetFeelsLikeEmoji(float feelsLikeCelsius)
+        {
+            if (feelsLikeCelsius < -20) return "🥶❄️";
+            if (feelsLikeCelsius < -10) return "🧣🧤";
+            if (feelsLikeCelsius < 0) return "🧥🌬️";
+            if (feelsLikeCelsius < 10) return "🌫️🍃";
+            if (feelsLikeCelsius < 20) return "😊🍂";
+            if (feelsLikeCelsius < 25) return "😎🌤️";
+            if (feelsLikeCelsius < 30) return "🥵☀️";
+            return "🫠🔥";
         }
     }
 }

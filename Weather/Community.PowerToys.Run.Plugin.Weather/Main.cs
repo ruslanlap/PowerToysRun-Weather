@@ -204,13 +204,15 @@ namespace Community.PowerToys.Run.Plugin.Weather
             var iconPath = $"Images/CONDITIONS/{weather.IconCode}{themeSuffix}{dpiSuffix}.png";
             Debug.WriteLine($"Using icon path: {iconPath}");
 
+            
+
             // Calculate local time
             var localTime = DateTime.UtcNow.AddSeconds(weather.TimezoneOffset);
             return new Result
             {
                 Title = $"{weather.Location} | {temperature:F1}{temperatureUnit} - {weather.Condition}",
                 SubTitle = 
-                    $"   ┌─🌡 {Properties.Resources.plugin_feels_like}: {feelsLike:F1}{temperatureUnit}\n" +
+                    $"   ┌─🌡 {Properties.Resources.plugin_feels_like}: {feelsLike:F1}{temperatureUnit} {GetFeelsLikeEmoji(weather.FeelsLike)}\n" +
                     $"   ├─ 💧 {Properties.Resources.plugin_humidity}: {weather.Humidity}%\n" +
                     $"   ├─ 🌬 {Properties.Resources.plugin_wind_speed}: {windSpeed:F1} {(_settings.UseCelsius ? "m/s" : "mph")}\n" +
                     $"   └─ 🕒 Local time: {localTime:HH:mm}",
@@ -237,7 +239,8 @@ namespace Community.PowerToys.Run.Plugin.Weather
                         $"Humidity: {weather.Humidity}%\n" +
                         $"Wind: {windSpeed:F1} {(_settings.UseCelsius ? "m/s" : "mph")}\n" +
                         $"Local time: {localTime:HH:mm}",
-                        fullIconPath  // Pass the icon path here
+                        fullIconPath,
+                        weather.FeelsLike  // Pass the feels like temperature
                     );
 
                     weatherWindow.Show();
@@ -270,6 +273,18 @@ namespace Community.PowerToys.Run.Plugin.Weather
             }
 
             return iconPath;
+        }
+
+        private string GetFeelsLikeEmoji(float feelsLikeCelsius)
+        {
+            if (feelsLikeCelsius < -20) return "🥶❄️";
+            if (feelsLikeCelsius < -10) return "🧣🧤";
+            if (feelsLikeCelsius < 0) return "🧥🌬️";
+            if (feelsLikeCelsius < 10) return "🌫️🍃";
+            if (feelsLikeCelsius < 20) return "😊🍂";
+            if (feelsLikeCelsius < 25) return "😎🌤️";
+            if (feelsLikeCelsius < 30) return "🥵☀️";
+            return "🫠🔥";
         }
 
         public void Init(PluginInitContext context)
