@@ -13,17 +13,21 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   ![Maintenance](https://img.shields.io/maintenance/yes/2025)
   ![C#](https://img.shields.io/badge/C%23-.NET-512BD4)
-  ![Version](https://img.shields.io/badge/version-0.89.0-brightgreen)
+  ![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)
   ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+  [![GitHub stars](https://img.shields.io/github/stars/ruslanlap/CommunityPowerToysRunWEATHER)](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/stargazers)
+  [![GitHub issues](https://img.shields.io/github/issues/ruslanlap/CommunityPowerToysRunWEATHER)](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/issues)
+  [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ruslanlap/CommunityPowerToysRunWEATHER)](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/latest)
+  [![GitHub all releases](https://img.shields.io/github/downloads/ruslanlap/CommunityPowerToysRunWEATHER/total)](https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases)
   ![Made with Love](https://img.shields.io/badge/Made%20with-❤️-red)
   ![Awesome](https://img.shields.io/badge/Awesome-Yes-orange)
 </div>
 
 <div align="center">
-  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v0.89.0/Weather-x64.zip">
+  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v1.0.0/Weather-x64.zip">
     <img src="https://img.shields.io/badge/Download%20Latest%20Release-x64-blue?style=for-the-badge&logo=github" alt="Download Latest Release" />
   </a>
-  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v0.89.0/Weather-ARM64.zip">
+  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v1.0.0/Weather-ARM64.zip">
     <img src="https://img.shields.io/badge/Download%20Latest%20Release-ARM64-blue?style=for-the-badge&logo=github" alt="Download Latest Release" />
   </a>
 </div>
@@ -57,7 +61,7 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
 ## ⚡ Easy Install
 
 <div align="">
-  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v0.89.0/Weather-x64.zip">
+  <a href="https://github.com/ruslanlap/CommunityPowerToysRunWEATHER/releases/download/v1.0.0/Weather-x64.zip">
     <img src="https://img.shields.io/badge/⬇️_DOWNLOAD-WEATHER_PLUGIN-blue?style=for-the-badge&logo=github" alt="Download Weather Plugin">
   </a>
   
@@ -295,4 +299,3 @@ The plugin implements several PowerToys Run interfaces:
 - [ ] Offline mode improvements
 - [ ] Location autocomplete
 - [ ] Weather maps integration
-# PowerToysRun-Weather
