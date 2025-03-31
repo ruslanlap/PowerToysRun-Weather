@@ -3,7 +3,9 @@
 <div align="center">
   <img src="Assets/Demo/demo-weather-widget.gif" alt="Weather Plugin Demo" width="650">
   
-  <img src="Assets/logo.png" alt="Weather Icon" width="128" height="128">
+  <p align="center">
+    <img src="Assets/logo.png" alt="Weather Icon" width="128" height="128">
+  </p>
   
   <h1>✨ Weather for PowerToys Run ✨</h1>
   <h3>Get real-time weather information directly from PowerToys Run</h3>
