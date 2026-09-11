@@ -99,7 +99,8 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
   - Weather condition with icon
 - 🖼️ **Visual Weather Window** - See detailed weather in a dedicated window
 - 🔄 **Auto-refresh** - Weather data is cached but refreshed regularly
-- 🔑 **API Key Management** - Easy setup with OpenWeatherMap API
+- 🆓 **No API Key Required** - Powered by [Open-Meteo](https://open-meteo.com/) for out-of-the-box operation with zero setup
+- 📮 **Postal / ZIP Code Search** - Search by city name or postal/ZIP code (e.g. `98101` or `SW1A 1AA`)
 - 🌓 **Theme Support** - Works with both light and dark PowerToys themes
 - 🕒 **Location Time** - Displays the current time at the weather location
 - 🎨 **Beautiful Widget** - Elegant popup window with modern UI design that works like a mini weather widget
@@ -130,7 +131,6 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
 
 - [Microsoft PowerToys](https://github.com/microsoft/PowerToys/releases) installed
 - Windows 10 or later
-- [OpenWeatherMap API key](https://openweathermap.org/api) (free tier is sufficient)
 
 ### 📥 Installation Steps
 
@@ -140,8 +140,7 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
    %LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins\
    ```
 3. Restart PowerToys
-4. Open PowerToys Run and type `weather` to access the plugin
-5. Enter your OpenWeatherMap API key in the plugin settings
+4. Open PowerToys Run and type `weather` to access the plugin!
 
 <div align="center">
   <a href="https://github.com/ruslanlap/PowerToysRun-Weather/releases/latest">
@@ -176,7 +175,6 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
 
 The Weather plugin stores the following data locally:
 
-- Your OpenWeatherMap API key
 - Default location
 - Favorite locations
 - Temperature unit preference (Celsius/Fahrenheit)
@@ -238,8 +236,8 @@ Please make sure to update tests as appropriate.
 ## ❓ FAQ
 
 <details>
-<summary><b>How do I get an OpenWeatherMap API key?</b></summary>
-<p>Visit <a href="https://openweathermap.org/api">OpenWeatherMap</a>, create a free account, and generate an API key. The free tier allows up to 1,000 API calls per day, which is more than enough for personal use.</p>
+<summary><b>Is an API key required?</b></summary>
+<p>No! The plugin uses Open-Meteo and does not require an API key or account creation. It works out-of-the-box.</p>
 </details>
 
 <details>
@@ -249,17 +247,17 @@ Please make sure to update tests as appropriate.
 
 <details>
 <summary><b>How often is the weather data updated?</b></summary>
-<p>Weather data is cached for 30 minutes to reduce API calls. After that time, new data will be fetched automatically.</p>
+<p>Weather data is cached (30 minutes default) to ensure instant responses. After that time, new data will be fetched automatically.</p>
 </details>
 
 <details>
 <summary><b>Can I use this plugin offline?</b></summary>
-<p>The plugin requires internet access to fetch weather data. However, it will display cached data if available when offline.</p>
+<p>The plugin requires internet access to fetch live weather data. However, it will display cached data if available when offline.</p>
 </details>
 
 <details>
 <summary><b>How can I change from Celsius to Fahrenheit?</b></summary>
-<p>Open the plugin settings by typing "weather settings" in PowerToys Run, then toggle the temperature unit option.</p>
+<p>Open the plugin settings in PowerToys Run Settings or type "weather settings", then toggle the temperature unit option.</p>
 </details>
 
 ## ✨ Why You'll Love Weather Plugin
@@ -279,7 +277,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgements
 
 - [Microsoft PowerToys](https://github.com/microsoft/PowerToys) team for the amazing launcher
-- [OpenWeatherMap](https://openweathermap.org/) for providing the weather API
+- [Open-Meteo](https://open-meteo.com/) for providing free, keyless weather data and geocoding
+- [baldbeardedbuilder](https://github.com/baldbeardedbuilder) for the WeatherExtension implementation
 - All contributors who have helped improve this plugin
 
 ## 🛠️ Implementation Details
