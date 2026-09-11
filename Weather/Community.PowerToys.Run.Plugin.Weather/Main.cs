@@ -8,12 +8,11 @@ using System.Diagnostics;
 using Wox.Plugin;
 using Microsoft.PowerToys.Settings.UI.Library;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using System.Collections.Concurrent;
 using System.IO;
+using Community.PowerToys.Run.Plugin.Weather.Models;
+using Community.PowerToys.Run.Plugin.Weather.Services;
 
 namespace Community.PowerToys.Run.Plugin.Weather
 {
@@ -29,43 +28,27 @@ namespace Community.PowerToys.Run.Plugin.Weather
 
         private readonly HttpClient _httpClient;
         private WeatherSettings _settings;
-        private WeatherApi _weatherApi;
-        private const string API_SIGNUP_URL = "https://openweathermap.org/api";
+        private GeocodingService _geocodingService;
+        private OpenMeteoService _weatherService;
 
         public Main()
         {
-            _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) }; // Prevent hanging
+            _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
             _settings = new WeatherSettings();
+            _geocodingService = new GeocodingService(_httpClient);
+            _weatherService = new OpenMeteoService(_httpClient, _geocodingService, _settings.CacheMinutes);
         }
 
         // Clears the weather cache
         public void ClearWeatherCache()
         {
-            _weatherApi?.ClearCache();
+            _weatherService?.ClearCache();
         }
 
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
-            var searchTerm = query.Search.Trim();
-
-            if (string.IsNullOrEmpty(_settings.ApiKey))
-            {
-                return new List<Result>
-                {
-                    new Result
-                    {
-                        Title = Properties.Resources.plugin_api_key_missing,
-                        SubTitle = $"Visit {API_SIGNUP_URL} to get your free API key, then set it in the plugin settings",
-                        IcoPath = IconPath,
-                        Action = _ =>
-                        {
-                            Process.Start(new ProcessStartInfo { FileName = API_SIGNUP_URL, UseShellExecute = true });
-                            return true;
-                        }
-                    }
-                };
-            }
+            var searchTerm = query?.Search?.Trim() ?? string.Empty;
 
             try
             {
@@ -76,7 +59,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                     {
                         foreach (var location in _settings.FavoriteLocations)
                         {
-                            var weatherTask = Task.Run(async () => await _weatherApi.GetWeatherForLocationAsync(location));
+                            var weatherTask = Task.Run(async () => await _weatherService.GetWeatherForLocationAsync(location));
                             if (weatherTask.Wait(TimeSpan.FromSeconds(3)))
                             {
                                 var weather = weatherTask.Result;
@@ -90,7 +73,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                         // Fallback to default location if no favorite weather data is retrieved
                         if (results.Count == 0 && !string.IsNullOrEmpty(_settings.DefaultLocation))
                         {
-                            var weatherTask = Task.Run(async () => await _weatherApi.GetWeatherForLocationAsync(_settings.DefaultLocation));
+                            var weatherTask = Task.Run(async () => await _weatherService.GetWeatherForLocationAsync(_settings.DefaultLocation));
                             if (weatherTask.Wait(TimeSpan.FromSeconds(3)))
                             {
                                 var weather = weatherTask.Result;
@@ -104,7 +87,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                         // Fallback to geolocation if still no results
                         if (results.Count == 0)
                         {
-                            var weatherTask = Task.Run(async () => await _weatherApi.GetCurrentLocationWeatherAsync());
+                            var weatherTask = Task.Run(async () => await _weatherService.GetCurrentLocationWeatherAsync());
                             if (weatherTask.Wait(TimeSpan.FromSeconds(3)))
                             {
                                 var weather = weatherTask.Result;
@@ -119,7 +102,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                     }
                     else if (!string.IsNullOrEmpty(_settings.DefaultLocation))
                     {
-                        var weatherTask = Task.Run(async () => await _weatherApi.GetWeatherForLocationAsync(_settings.DefaultLocation));
+                        var weatherTask = Task.Run(async () => await _weatherService.GetWeatherForLocationAsync(_settings.DefaultLocation));
                         if (weatherTask.Wait(TimeSpan.FromSeconds(3)))
                         {
                             var weather = weatherTask.Result;
@@ -132,7 +115,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                     }
 
                     // Use geolocation if no favorites or default location
-                    var currentWeatherTask = Task.Run(async () => await _weatherApi.GetCurrentLocationWeatherAsync());
+                    var currentWeatherTask = Task.Run(async () => await _weatherService.GetCurrentLocationWeatherAsync());
                     if (currentWeatherTask.Wait(TimeSpan.FromSeconds(5)))
                     {
                         var currentWeather = currentWeatherTask.Result;
@@ -146,7 +129,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                 }
                 else
                 {
-                    var weatherTask = Task.Run(async () => await _weatherApi.GetWeatherForLocationAsync(searchTerm));
+                    var weatherTask = Task.Run(async () => await _weatherService.GetWeatherForLocationAsync(searchTerm));
                     if (weatherTask.Wait(TimeSpan.FromSeconds(5)))
                     {
                         var weather = weatherTask.Result;
@@ -159,7 +142,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                             results.Add(new Result
                             {
                                 Title = string.Format(Properties.Resources.plugin_search_failed, searchTerm),
-                                SubTitle = "Location not found. Try a different city name or check your API key",
+                                SubTitle = "Location not found. Try a different city or postal code",
                                 IcoPath = IconPath
                             });
                         }
@@ -196,15 +179,11 @@ namespace Community.PowerToys.Run.Plugin.Weather
             var feelsLike = _settings.UseCelsius ? weather.FeelsLike : CelsiusToFahrenheit(weather.FeelsLike);
             var windSpeed = _settings.UseCelsius ? weather.WindSpeed : (weather.WindSpeed * 2.237f);
 
-            // Build the path to the icon according to the theme
-            var isDarkTheme = Context.API.GetCurrentTheme() != Theme.Light &&
-                                Context.API.GetCurrentTheme() != Theme.HighContrastWhite;
-            var themeSuffix = isDarkTheme ? "_t" : "_w";
-            var dpiSuffix = "@4x";
-            var iconPath = $"Images/CONDITIONS/{weather.IconCode}{themeSuffix}{dpiSuffix}.png";
-            Debug.WriteLine($"Using icon path: {iconPath}");
-
-            
+            var iconFile = $"{weather.IconCode}_t@4x.png";
+            var iconRelativePath = Path.Combine("Images", "CONDITIONS", iconFile);
+            var pluginDir = Context?.CurrentPluginMetadata?.PluginDirectory ?? AppDomain.CurrentDomain.BaseDirectory;
+            var fullIconPath = Path.Combine(pluginDir, iconRelativePath);
+            var iconPathToUse = File.Exists(fullIconPath) ? iconRelativePath : (IconPath ?? "Images/weather.light.png");
 
             // Calculate local time
             var localTime = DateTime.UtcNow.AddSeconds(weather.TimezoneOffset);
@@ -216,21 +195,10 @@ namespace Community.PowerToys.Run.Plugin.Weather
                     $"   ├─ 💧 {Properties.Resources.plugin_humidity}: {weather.Humidity}%\n" +
                     $"   ├─ 🌬 {Properties.Resources.plugin_wind_speed}: {windSpeed:F1} {(_settings.UseCelsius ? "m/s" : "mph")}\n" +
                     $"   └─ 🕒 Local time: {localTime:HH:mm}",
-                IcoPath = iconPath,
+                IcoPath = iconPathToUse,
                 Action = _ =>
                 {
-                    // Get the full path to the icon
-                    string fullIconPath = System.IO.Path.Combine(
-                        Context.CurrentPluginMetadata.PluginDirectory, 
-                        iconPath);
-
-                    // For debugging
-                    Debug.WriteLine($"Icon path: {fullIconPath}, exists: {File.Exists(fullIconPath)}");
-
-                    // Create window with weather details
                     var weatherWindow = new WeatherResultWindow();
-
-                    // Set the weather data directly with icon
                     weatherWindow.SetWeatherData(
                         $"{weather.Location} | {temperature:F1}{temperatureUnit}",
                         $"{weather.Condition}\n" +
@@ -240,9 +208,8 @@ namespace Community.PowerToys.Run.Plugin.Weather
                         $"Wind: {windSpeed:F1} {(_settings.UseCelsius ? "m/s" : "mph")}\n" +
                         $"Local time: {localTime:HH:mm}",
                         fullIconPath,
-                        weather.FeelsLike  // Pass the feels like temperature
+                        weather.FeelsLike
                     );
-
                     weatherWindow.Show();
                     return true;
                 },
@@ -252,28 +219,6 @@ namespace Community.PowerToys.Run.Plugin.Weather
         }
 
         private float CelsiusToFahrenheit(float celsius) => (celsius * 9 / 5) + 32;
-
-        private string GetWeatherIconPath(string iconCode)
-        {
-            var themeSuffix = Context.API.GetCurrentTheme() == Theme.Light || Context.API.GetCurrentTheme() == Theme.HighContrastWhite
-                ? ".light.png"
-                : ".dark.png";
-
-            if (string.IsNullOrEmpty(iconCode))
-                return IconPath;
-
-            var iconPath = $"Images\\weather_{iconCode}{themeSuffix}";
-            var fullPath = Path.Combine(Context.CurrentPluginMetadata.PluginDirectory, iconPath);
-            Debug.WriteLine($"Weather icon path: {fullPath}, exists: {File.Exists(fullPath)}");
-
-            if (!File.Exists(fullPath))
-            {
-                Debug.WriteLine($"Icon not found for code: {iconCode}, using default");
-                return IconPath;
-            }
-
-            return iconPath;
-        }
 
         private string GetFeelsLikeEmoji(float feelsLikeCelsius)
         {
@@ -292,7 +237,8 @@ namespace Community.PowerToys.Run.Plugin.Weather
             Context = context ?? throw new ArgumentNullException(nameof(context));
             Context.API.ThemeChanged += OnThemeChanged;
             UpdateIconPath(Context.API.GetCurrentTheme());
-            _weatherApi = new WeatherApi(_httpClient, _settings.ApiKey, _settings.CacheMinutes);
+            _geocodingService = new GeocodingService(_httpClient);
+            _weatherService = new OpenMeteoService(_httpClient, _geocodingService, _settings.CacheMinutes);
         }
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
@@ -346,7 +292,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                     {
                         Process.Start(new ProcessStartInfo
                         {
-                            FileName = $"https://openweathermap.org/find?q={Uri.EscapeDataString(weather.Location)}",
+                            FileName = $"https://www.google.com/search?q={Uri.EscapeDataString(weather.Location + " weather forecast")}",
                             UseShellExecute = true
                         });
                         return true;
@@ -362,7 +308,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                     Glyph = "\xE72C",
                     Action = _ =>
                     {
-                        _weatherApi.ClearCache(weather.Location);
+                        _weatherService.ClearCache(weather.Location);
                         return false;
                     }
                 });
@@ -430,7 +376,6 @@ namespace Community.PowerToys.Run.Plugin.Weather
                 return;
 
             _settings.DefaultLocation = settings.AdditionalOptions?.FirstOrDefault(x => x.Key == "DefaultLocation")?.TextValue ?? "";
-            _settings.ApiKey = settings.AdditionalOptions?.FirstOrDefault(x => x.Key == "ApiKey")?.TextValue ?? "";
 
             var cacheString = settings.AdditionalOptions?.FirstOrDefault(x => x.Key == "CacheMinutes")?.TextValue ?? "30";
             if (int.TryParse(cacheString, out int cacheMinutes))
@@ -447,7 +392,7 @@ namespace Community.PowerToys.Run.Plugin.Weather
                 }
             }
 
-            _weatherApi = new WeatherApi(_httpClient, _settings.ApiKey, _settings.CacheMinutes);
+            _weatherService = new OpenMeteoService(_httpClient, _geocodingService, _settings.CacheMinutes);
         }
 
         public IEnumerable<PluginAdditionalOption> AdditionalOptions => new List<PluginAdditionalOption>
@@ -460,15 +405,6 @@ namespace Community.PowerToys.Run.Plugin.Weather
                 DisplayDescription = "Enter your default location for weather updates",
                 TextBoxMaxLength = 100,
                 TextValue = _settings.DefaultLocation
-            },
-            new PluginAdditionalOption
-            {
-                PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Textbox,
-                Key = "ApiKey",
-                DisplayLabel = "Weather API Key",
-                DisplayDescription = $"Enter your OpenWeatherMap API key (get one free at {API_SIGNUP_URL})",
-                TextBoxMaxLength = 50,
-                TextValue = _settings.ApiKey
             },
             new PluginAdditionalOption
             {
@@ -517,211 +453,16 @@ namespace Community.PowerToys.Run.Plugin.Weather
 
     public class WeatherSettings
     {
-        public string ApiKey { get; set; } = string.Empty;
         public string DefaultLocation { get; set; } = string.Empty;
         public bool UseCelsius { get; set; } = true;
         public List<string> FavoriteLocations { get; set; } = new List<string>();
         public int CacheMinutes { get; set; } = 30;
     }
 
-    public class WeatherApi
-    {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
-        private readonly int _cacheMinutes;
-        private readonly ConcurrentDictionary<string, CachedWeatherData> _cache = new ConcurrentDictionary<string, CachedWeatherData>();
-        private readonly string _iconCacheFolder;
-
-        public WeatherApi(HttpClient httpClient, string apiKey, int cacheMinutes = 30)
-        {
-            _httpClient = httpClient;
-            _apiKey = apiKey;
-            _cacheMinutes = cacheMinutes;
-            _iconCacheFolder = Path.Combine(Path.GetTempPath(), "PowerToys", "WeatherPlugin", "IconCache");
-
-            Directory.CreateDirectory(_iconCacheFolder);
-            Debug.WriteLine($"Icon cache folder: {_iconCacheFolder}");
-        }
-
-        // Downloads the weather icon and saves it locally
-        public async Task<string> DownloadWeatherIconAsync(string iconCode, bool isDarkTheme)
-        {
-            if (string.IsNullOrEmpty(iconCode))
-                return null;
-
-            try
-            {
-                string suffix = isDarkTheme ? ".dark.png" : ".light.png";
-                string filename = $"weather_{iconCode}{suffix}";
-                string fullPath = Path.Combine(_iconCacheFolder, filename);
-
-                Debug.WriteLine($"Checking for icon at: {fullPath}");
-
-                if (File.Exists(fullPath))
-                {
-                    Debug.WriteLine($"Icon found: {fullPath}");
-                    return fullPath;
-                }
-
-                Debug.WriteLine($"Downloading icon: {iconCode}");
-                var response = await _httpClient.GetAsync($"https://openweathermap.org/img/wn/{iconCode}@2x.png");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var bytes = await response.Content.ReadAsByteArrayAsync();
-                    await File.WriteAllBytesAsync(fullPath, bytes);
-                    Debug.WriteLine($"Icon saved to: {fullPath}");
-                    return fullPath;
-                }
-
-                Debug.WriteLine("Failed to download icon");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error downloading icon: {ex.Message}, {ex.StackTrace}");
-                return null;
-            }
-        }
-
-        public void ClearCache(string location = null)
-        {
-            if (location == null)
-                _cache.Clear();
-            else
-                _cache.TryRemove(location.ToLower(), out _);
-        }
-
-        public async Task<WeatherData> GetCurrentLocationWeatherAsync()
-        {
-            try
-            {
-                var locationResponse = await _httpClient.GetAsync("http://ip-api.com/json/");
-                if (locationResponse.IsSuccessStatusCode)
-                {
-                    var locationJson = await locationResponse.Content.ReadAsStringAsync();
-                    var locationData = JsonSerializer.Deserialize<LocationData>(locationJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    if (locationData != null && !string.IsNullOrEmpty(locationData.City))
-                        return await GetWeatherForLocationAsync(locationData.City);
-                }
-                return await GetWeatherForLocationAsync("Kyiv");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error getting location: {ex.Message}");
-                return await GetWeatherForLocationAsync("Kyiv");
-            }
-        }
-
-        public async Task<WeatherData> GetWeatherForLocationAsync(string location)
-        {
-            if (string.IsNullOrEmpty(location))
-                return null;
-
-            string locationKey = location.ToLower();
-
-            if (_cacheMinutes > 0 && _cache.TryGetValue(locationKey, out CachedWeatherData cachedData))
-            {
-                if (DateTime.Now - cachedData.Timestamp < TimeSpan.FromMinutes(_cacheMinutes))
-                    return cachedData.Data;
-            }
-
-            try
-            {
-                var url = $"https://api.openweathermap.org/data/2.5/weather?q={Uri.EscapeDataString(location)}&appid={_apiKey}&units=metric";
-                var response = await _httpClient.GetAsync(url);
-                var json = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorResponse = JsonSerializer.Deserialize<OpenWeatherMapErrorResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    Debug.WriteLine($"OpenWeatherMap error: {errorResponse?.Message}");
-                    return null;
-                }
-
-                var weatherResponse = JsonSerializer.Deserialize<OpenWeatherMapResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                if (weatherResponse == null || weatherResponse.Weather == null || weatherResponse.Weather.Length == 0)
-                {
-                    Debug.WriteLine("Invalid response format");
-                    return null;
-                }
-
-                var weatherData = new WeatherData
-                {
-                    Location = weatherResponse.Name,
-                    Temperature = weatherResponse.Main.Temp,
-                    FeelsLike = weatherResponse.Main.FeelsLike,
-                    Humidity = weatherResponse.Main.Humidity,
-                    WindSpeed = weatherResponse.Wind.Speed,
-                    Condition = weatherResponse.Weather[0].Main,
-                    IconCode = weatherResponse.Weather[0].Icon,
-                    Description = weatherResponse.Weather[0].Description,
-                    TimezoneOffset = weatherResponse.Timezone
-                };
-
-                if (_cacheMinutes > 0)
-                {
-                    _cache[locationKey] = new CachedWeatherData { Data = weatherData, Timestamp = DateTime.Now };
-                }
-
-                return weatherData;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error fetching weather: {ex.Message}");
-                return null;
-            }
-        }
-    }
-
     public class CachedWeatherData
     {
         public WeatherData Data { get; set; }
         public DateTime Timestamp { get; set; }
-    }
-
-    public class LocationData
-    {
-        public string City { get; set; }
-        public string CountryCode { get; set; }
-        public string Country { get; set; }
-    }
-
-    public class OpenWeatherMapResponse
-    {
-        public int Timezone { get; set; }
-        public string Name { get; set; }
-        public MainData Main { get; set; }
-        public WindData Wind { get; set; }
-        public WeatherCondition[] Weather { get; set; }
-    }
-
-    public class OpenWeatherMapErrorResponse
-    {
-        public string Message { get; set; }
-        public int Cod { get; set; }
-    }
-
-    public class MainData
-    {
-        public float Temp { get; set; }
-
-        [JsonPropertyName("feels_like")]
-        public float FeelsLike { get; set; }
-
-        public int Humidity { get; set; }
-    }
-
-    public class WindData
-    {
-        public float Speed { get; set; }
-    }
-
-    public class WeatherCondition
-    {
-        public string Main { get; set; }
-        public string Description { get; set; }
-        public string Icon { get; set; }
     }
 
     public class WeatherData
@@ -735,7 +476,6 @@ namespace Community.PowerToys.Run.Plugin.Weather
         public string Condition { get; set; }
         public string Description { get; set; }
         public string IconCode { get; set; }
-        public string IconUrl => $"https://openweathermap.org/img/wn/{IconCode}@2x.png";
     }
 
     public partial class WeatherSettingsControl : UserControl
@@ -743,7 +483,6 @@ namespace Community.PowerToys.Run.Plugin.Weather
         private readonly WeatherSettings _settings;
         private readonly Main _main;
 
-        private TextBox ApiKeyTextBox;
         private RadioButton CelsiusRadioButton;
         private RadioButton FahrenheitRadioButton;
         private TextBox DefaultLocationTextBox;
@@ -752,7 +491,6 @@ namespace Community.PowerToys.Run.Plugin.Weather
         private Button AddFavoriteButton;
         private Button RemoveFavoriteButton;
         private Button SaveButton;
-        private Button GetApiKeyButton;
         private Button ClearCacheButton;
 
         public WeatherSettingsControl(WeatherSettings settings, Main main)
@@ -761,7 +499,6 @@ namespace Community.PowerToys.Run.Plugin.Weather
             _main = main;
             InitializeComponent();
 
-            ApiKeyTextBox.Text = _settings.ApiKey;
             CelsiusRadioButton.IsChecked = _settings.UseCelsius;
             FahrenheitRadioButton.IsChecked = !_settings.UseCelsius;
             DefaultLocationTextBox.Text = _settings.DefaultLocation;
@@ -775,7 +512,6 @@ namespace Community.PowerToys.Run.Plugin.Weather
             AddFavoriteButton.Click += AddFavoriteButton_Click;
             RemoveFavoriteButton.Click += RemoveFavoriteButton_Click;
             SaveButton.Click += SaveButton_Click;
-            GetApiKeyButton.Click += GetApiKeyButton_Click;
             ClearCacheButton.Click += ClearCacheButton_Click;
         }
 
@@ -790,158 +526,128 @@ namespace Community.PowerToys.Run.Plugin.Weather
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
             int currentRow = 0;
 
-            Grid apiKeyGrid = new Grid();
-            apiKeyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            apiKeyGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            Grid.SetRow(apiKeyGrid, currentRow++);
-            grid.Children.Add(apiKeyGrid);
+            Label defaultLocLabel = new Label { Content = "Default Location:", Margin = new Thickness(5) };
+            Grid.SetRow(defaultLocLabel, currentRow++);
+            grid.Children.Add(defaultLocLabel);
 
-            Label apiKeyLabel = new Label { Content = "OpenWeatherMap API Key:", Margin = new Thickness(5) };
-            Grid.SetRow(apiKeyLabel, currentRow++);
-            grid.Children.Add(apiKeyLabel);
+            DefaultLocationTextBox = new TextBox { Margin = new Thickness(5) };
+            Grid.SetRow(DefaultLocationTextBox, currentRow++);
+            grid.Children.Add(DefaultLocationTextBox);
 
-            ApiKeyTextBox = new TextBox { Margin = new Thickness(5) };
-            Grid.SetColumn(ApiKeyTextBox, 0);
-            apiKeyGrid.Children.Add(ApiKeyTextBox);
+            Label cacheLabel = new Label { Content = "Cache Duration (minutes):", Margin = new Thickness(5) };
+            Grid.SetRow(cacheLabel, currentRow++);
+            grid.Children.Add(cacheLabel);
 
-            // Here's the fix - initialize the GetApiKeyButton
-            GetApiKeyButton = new Button { Content = "Get API Key", Margin = new Thickness(5) };
-            Grid.SetColumn(GetApiKeyButton, 1);
-            apiKeyGrid.Children.Add(GetApiKeyButton);
+            Grid cacheGrid = new Grid();
+            cacheGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            cacheGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            Grid.SetRow(cacheGrid, currentRow++);
+            grid.Children.Add(cacheGrid);
 
-                        Label defaultLocLabel = new Label { Content = "Default Location:", Margin = new Thickness(5) };
-                        Grid.SetRow(defaultLocLabel, currentRow++);
-                        grid.Children.Add(defaultLocLabel);
+            CacheDurationTextBox = new TextBox { Margin = new Thickness(5) };
+            Grid.SetColumn(CacheDurationTextBox, 0);
+            cacheGrid.Children.Add(CacheDurationTextBox);
 
-                        DefaultLocationTextBox = new TextBox { Margin = new Thickness(5) };
-                        Grid.SetRow(DefaultLocationTextBox, currentRow++);
-                        grid.Children.Add(DefaultLocationTextBox);
+            ClearCacheButton = new Button { Content = "Clear Cache", Margin = new Thickness(5) };
+            Grid.SetColumn(ClearCacheButton, 1);
+            cacheGrid.Children.Add(ClearCacheButton);
 
-                        Label cacheLabel = new Label { Content = "Cache Duration (minutes):", Margin = new Thickness(5) };
-                        Grid.SetRow(cacheLabel, currentRow++);
-                        grid.Children.Add(cacheLabel);
+            GroupBox tempUnitGroup = new GroupBox { Header = "Temperature Unit", Margin = new Thickness(5) };
+            Grid.SetRow(tempUnitGroup, currentRow++);
+            grid.Children.Add(tempUnitGroup);
 
-                        Grid cacheGrid = new Grid();
-                        cacheGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                        cacheGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-                        Grid.SetRow(cacheGrid, currentRow++);
-                        grid.Children.Add(cacheGrid);
+            StackPanel tempPanel = new StackPanel { Orientation = Orientation.Horizontal };
+            tempUnitGroup.Content = tempPanel;
 
-                        CacheDurationTextBox = new TextBox { Margin = new Thickness(5) };
-                        Grid.SetColumn(CacheDurationTextBox, 0);
-                        cacheGrid.Children.Add(CacheDurationTextBox);
+            CelsiusRadioButton = new RadioButton { Content = "Celsius (°C)", Margin = new Thickness(5) };
+            tempPanel.Children.Add(CelsiusRadioButton);
 
-                        ClearCacheButton = new Button { Content = "Clear Cache", Margin = new Thickness(5) };
-                        Grid.SetColumn(ClearCacheButton, 1);
-                        cacheGrid.Children.Add(ClearCacheButton);
+            FahrenheitRadioButton = new RadioButton { Content = "Fahrenheit (°F)", Margin = new Thickness(5) };
+            tempPanel.Children.Add(FahrenheitRadioButton);
 
-                        GroupBox tempUnitGroup = new GroupBox { Header = "Temperature Unit", Margin = new Thickness(5) };
-                        Grid.SetRow(tempUnitGroup, currentRow++);
-                        grid.Children.Add(tempUnitGroup);
+            GroupBox favoritesGroup = new GroupBox { Header = "Favorite Locations", Margin = new Thickness(5) };
+            Grid.SetRow(favoritesGroup, currentRow++);
+            grid.Children.Add(favoritesGroup);
 
-                        StackPanel tempPanel = new StackPanel { Orientation = Orientation.Horizontal };
-                        tempUnitGroup.Content = tempPanel;
+            Grid favGrid = new Grid();
+            favoritesGroup.Content = favGrid;
 
-                        CelsiusRadioButton = new RadioButton { Content = "Celsius (°C)", Margin = new Thickness(5) };
-                        tempPanel.Children.Add(CelsiusRadioButton);
+            favGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            favGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-                        FahrenheitRadioButton = new RadioButton { Content = "Fahrenheit (°F)", Margin = new Thickness(5) };
-                        tempPanel.Children.Add(FahrenheitRadioButton);
+            FavoriteLocationsListBox = new ListBox { Margin = new Thickness(5) };
+            Grid.SetRow(FavoriteLocationsListBox, 0);
+            favGrid.Children.Add(FavoriteLocationsListBox);
 
-                        GroupBox favoritesGroup = new GroupBox { Header = "Favorite Locations", Margin = new Thickness(5) };
-                        Grid.SetRow(favoritesGroup, currentRow++);
-                        grid.Children.Add(favoritesGroup);
+            StackPanel btnPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5) };
+            Grid.SetRow(btnPanel, 1);
+            favGrid.Children.Add(btnPanel);
 
-                        Grid favGrid = new Grid();
-                        favoritesGroup.Content = favGrid;
+            AddFavoriteButton = new Button { Content = "Add Current Location", Margin = new Thickness(5) };
+            btnPanel.Children.Add(AddFavoriteButton);
 
-                        favGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                        favGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            RemoveFavoriteButton = new Button { Content = "Remove Selected", Margin = new Thickness(5) };
+            btnPanel.Children.Add(RemoveFavoriteButton);
 
-                        FavoriteLocationsListBox = new ListBox { Margin = new Thickness(5) };
-                        Grid.SetRow(FavoriteLocationsListBox, 0);
-                        favGrid.Children.Add(FavoriteLocationsListBox);
+            SaveButton = new Button
+            {
+                Content = "Save Settings",
+                Margin = new Thickness(5),
+                Padding = new Thickness(10, 5, 10, 5),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Background = System.Windows.Media.Brushes.LightBlue
+            };
+            Grid.SetRow(SaveButton, currentRow++);
+            grid.Children.Add(SaveButton);
+        }
 
-                        StackPanel btnPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5) };
-                        Grid.SetRow(btnPanel, 1);
-                        favGrid.Children.Add(btnPanel);
-
-                        AddFavoriteButton = new Button { Content = "Add Current Location", Margin = new Thickness(5) };
-                        btnPanel.Children.Add(AddFavoriteButton);
-
-                        RemoveFavoriteButton = new Button { Content = "Remove Selected", Margin = new Thickness(5) };
-                        btnPanel.Children.Add(RemoveFavoriteButton);
-
-                        SaveButton = new Button
-                        {
-                            Content = "Save Settings",
-                            Margin = new Thickness(5),
-                            Padding = new Thickness(10, 5, 10, 5),
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            Background = System.Windows.Media.Brushes.LightBlue
-                        };
-                        Grid.SetRow(SaveButton, currentRow++);
-                        grid.Children.Add(SaveButton);
-                    }
-
-                    private void AddFavoriteButton_Click(object sender, RoutedEventArgs e)
-                    {
-                        string location = DefaultLocationTextBox.Text.Trim();
-                        if (!string.IsNullOrEmpty(location) && !FavoriteLocationsListBox.Items.Contains(location))
-                        {
-                            FavoriteLocationsListBox.Items.Add(location);
-                        }
-                    }
-
-                    private void RemoveFavoriteButton_Click(object sender, RoutedEventArgs e)
-                    {
-                        if (FavoriteLocationsListBox.SelectedItem != null)
-                        {
-                            FavoriteLocationsListBox.Items.Remove(FavoriteLocationsListBox.SelectedItem);
-                        }
-                    }
-
-                    private void SaveButton_Click(object sender, RoutedEventArgs e)
-                    {
-                        if (!int.TryParse(CacheDurationTextBox.Text, out int cacheMinutes) || cacheMinutes < 0)
-                        {
-                            MessageBox.Show("Please enter a valid cache duration (0 or positive number)", "Validation Error");
-                            return;
-                        }
-
-                        _settings.ApiKey = ApiKeyTextBox.Text.Trim();
-                        _settings.UseCelsius = CelsiusRadioButton.IsChecked.GetValueOrDefault(true);
-                        _settings.DefaultLocation = DefaultLocationTextBox.Text.Trim();
-                        _settings.CacheMinutes = cacheMinutes;
-                        _settings.FavoriteLocations.Clear();
-                        foreach (var item in FavoriteLocationsListBox.Items)
-                        {
-                            _settings.FavoriteLocations.Add(item.ToString());
-                        }
-
-                        _main.SaveSettings();
-                        MessageBox.Show("Settings saved successfully!", "Weather Plugin");
-                    }
-
-                    private void GetApiKeyButton_Click(object sender, RoutedEventArgs e)
-                    {
-                        Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "https://openweathermap.org/api",
-                            UseShellExecute = true
-                        });
-                    }
-
-                    private void ClearCacheButton_Click(object sender, RoutedEventArgs e)
-                    {
-                        _main.ClearWeatherCache();
-                        MessageBox.Show("Weather cache cleared", "Weather Plugin");
-                    }
-                }
+        private void AddFavoriteButton_Click(object sender, RoutedEventArgs e)
+        {
+            string location = DefaultLocationTextBox.Text.Trim();
+            if (!string.IsNullOrEmpty(location) && !FavoriteLocationsListBox.Items.Contains(location))
+            {
+                FavoriteLocationsListBox.Items.Add(location);
             }
+        }
+
+        private void RemoveFavoriteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (FavoriteLocationsListBox.SelectedItem != null)
+            {
+                FavoriteLocationsListBox.Items.Remove(FavoriteLocationsListBox.SelectedItem);
+            }
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!int.TryParse(CacheDurationTextBox.Text, out int cacheMinutes) || cacheMinutes < 0)
+            {
+                MessageBox.Show("Please enter a valid cache duration (0 or positive number)", "Validation Error");
+                return;
+            }
+
+            _settings.UseCelsius = CelsiusRadioButton.IsChecked.GetValueOrDefault(true);
+            _settings.DefaultLocation = DefaultLocationTextBox.Text.Trim();
+            _settings.CacheMinutes = cacheMinutes;
+            _settings.FavoriteLocations.Clear();
+            foreach (var item in FavoriteLocationsListBox.Items)
+            {
+                _settings.FavoriteLocations.Add(item.ToString());
+            }
+
+            _main.SaveSettings();
+            MessageBox.Show("Settings saved successfully!", "Weather Plugin");
+        }
+
+        private void ClearCacheButton_Click(object sender, RoutedEventArgs e)
+        {
+            _main.ClearWeatherCache();
+            MessageBox.Show("Weather cache cleared", "Weather Plugin");
+        }
+    }
+}

@@ -7,6 +7,7 @@ on:
       - master
     tags:
       - 'v*'
+  workflow_dispatch:
 
 # Permissions for GITHUB_TOKEN (principle of least privilege)
 permissions:
@@ -208,11 +209,10 @@ jobs:
           
           ## 📥 Installation
           
-          1. Download the ZIP file for your platform (x64 or ARM64)
+          1. Download the ZIP file for your platform (Weather-x64.zip or Weather-ARM64.zip)
           2. Extract to `%LOCALAPPDATA%\Microsoft\PowerToys\PowerToys Run\Plugins\`
           3. Restart PowerToys
-          4. Start using with `Alt+Space` then type `weather`
-          5. You'll need to get a free API key from [OpenWeatherMap](https://openweathermap.org/api)
+          4. Start using with `Alt+Space` then type `weather` (No API key needed!)
           
           ## 🔍 Quick Commands
           
@@ -221,19 +221,20 @@ jobs:
           | `weather` | Show weather for default/current location |
           | `weather London` | Show weather for a specific city |
           | `weather London, UK` | Show weather with country code |
+          | `weather 98101` | Show weather by postal or ZIP code |
           
           ## 🙏 Acknowledgements
           
           Special thanks to:
+          - [Open-Meteo](https://open-meteo.com/) for providing keyless weather data and geocoding
+          - [baldbeardedbuilder](https://github.com/baldbeardedbuilder) for the WeatherExtension implementation
+          - [ruslanlap](https://github.com/ruslanlap) for the original PowerToys Run Weather plugin
           - [hlaueriksson](https://github.com/hlaueriksson) for contributions and inspiration
-          - [OpenWeatherMap](https://openweathermap.org/) for providing the weather API
-          - [Microsoft PowerToys](https://github.com/microsoft/PowerToys) team for the amazing launcher
+          - [Microsoft PowerToys](https://github.com/microsoft/PowerToys) team for the launcher
           
           ## 🐛 Found a bug?
           
-          If you encounter any issues or have suggestions for improvements, please [open an issue](https://github.com/ruslanlap/PowerToysRun-Weather/issues).
-          
-          Made with ❤️ by [ruslanlap](https://github.com/ruslanlap)
+          If you encounter any issues or have suggestions for improvements, please [open an issue](https://github.com/BananaOnGitHub/PowerToysRun-Weather/issues).
           EOL
           
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
