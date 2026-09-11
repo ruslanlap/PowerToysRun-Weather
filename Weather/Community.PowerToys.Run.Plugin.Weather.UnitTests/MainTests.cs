@@ -47,6 +47,61 @@ namespace Community.PowerToys.Run.Plugin.Weather.UnitTests
             Assert.AreEqual("01n", iconNight);
         }
 
+
+
+        [TestMethod]
+        public void CreateWeatherResult_should_keep_pretty_unicode_layout()
+        {
+            var weather = new WeatherData
+            {
+                Location = "Kyiv",
+                Temperature = 21.3f,
+                FeelsLike = 19.1f,
+                Humidity = 64,
+                WindSpeed = 3.5f,
+                Condition = "Clear",
+                Description = "clear sky",
+                IconCode = "01d",
+                TimezoneOffset = 7200,
+            };
+
+            var method = typeof(Main).GetMethod("CreateWeatherResult", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.IsNotNull(method);
+            var result = (Result)method.Invoke(main, new object[] { weather });
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Title.Contains("Kyiv |"));
+            Assert.IsTrue(result.Title.Contains("- Clear"));
+            Assert.IsTrue(result.SubTitle.Contains("┌─🌡"));
+            Assert.IsTrue(result.SubTitle.Contains("├─ 💧"));
+            Assert.IsTrue(result.SubTitle.Contains("├─ 🌬"));
+            Assert.IsTrue(result.SubTitle.Contains("└─ 🕒"));
+        }
+
+        [TestMethod]
+        public void CreateWeatherResult_should_keep_feels_like_emoji()
+        {
+            var weather = new WeatherData
+            {
+                Location = "Kyiv",
+                Temperature = -22.0f,
+                FeelsLike = -25.0f,
+                Humidity = 70,
+                WindSpeed = 5.0f,
+                Condition = "Snow",
+                Description = "snow",
+                IconCode = "13d",
+                TimezoneOffset = 7200,
+            };
+
+            var method = typeof(Main).GetMethod("CreateWeatherResult", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            Assert.IsNotNull(method);
+            var result = (Result)method.Invoke(main, new object[] { weather });
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.SubTitle.Contains("🥶❄️"));
+        }
+
         [TestMethod]
         public void MapWmoCode_should_map_rain_and_snow()
         {
