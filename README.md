@@ -175,7 +175,6 @@ Weather is a plugin for [Microsoft PowerToys Run](https://github.com/microsoft/P
 
 The Weather plugin stores the following data locally:
 
-- Your OpenWeatherMap API key
 - Default location
 - Favorite locations
 - Temperature unit preference (Celsius/Fahrenheit)

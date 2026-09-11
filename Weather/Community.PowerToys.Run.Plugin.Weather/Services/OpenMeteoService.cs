@@ -28,10 +28,20 @@ namespace Community.PowerToys.Run.Plugin.Weather.Services
 
         public void ClearCache(string location = null)
         {
-            if (string.IsNullOrEmpty(location))
+            if (string.IsNullOrWhiteSpace(location))
+            {
                 _cache.Clear();
-            else
-                _cache.TryRemove(location, out _);
+                return;
+            }
+
+            var key = location.Trim();
+            _cache.TryRemove(key, out _);
+
+            foreach (var pair in _cache)
+            {
+                if (string.Equals(pair.Value?.Data?.Location, key, StringComparison.OrdinalIgnoreCase))
+                    _cache.TryRemove(pair.Key, out _);
+            }
         }
 
         public async Task<WeatherData> GetWeatherForLocationAsync(string location, CancellationToken ct = default)
